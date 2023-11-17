@@ -49,7 +49,7 @@ public class UserEntity {
     private String address;
 
     @Column(name = "fecha_cumpleanios")
-    private Date brithday_date;
+    private Date birthday_date;
 
     private LocalDateTime created_at;
 
