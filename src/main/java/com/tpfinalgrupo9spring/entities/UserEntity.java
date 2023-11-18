@@ -32,6 +32,7 @@ public class UserEntity {
     @NotBlank
     @Column(name = "apellido")
     private String lastname;
+
     @NotBlank
     @Column(name = "contrasenia")
     private String password;
