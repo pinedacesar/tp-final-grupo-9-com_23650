@@ -8,5 +8,5 @@ public class ErrorCode {
     public static final String MESSAGE_DUPLICATE_USERNAME = "El nombre de usuario ya existe";
     public static final String MESSAGE_DUPLICATE_EMAIL = "El correo electrónico ya existe";
     public static final String MESSAGE_DUPLICATE_DNI = "El número de documento ya existe";
-    public static final String DEFAULT_MESSAGE = "Error de duplicado";
+    public static final String DEFAULT_MESSAGE = "Credenciales invalidas";
 }
