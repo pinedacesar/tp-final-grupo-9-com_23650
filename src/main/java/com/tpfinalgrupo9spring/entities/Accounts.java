@@ -3,7 +3,7 @@ package com.tpfinalgrupo9spring.entities;
 import jakarta.persistence.Entity;
 import lombok.*;
 
-@Entity
+//@Entity
 @Getter
 @Setter
 @Builder
