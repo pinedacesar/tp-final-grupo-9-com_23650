@@ -6,8 +6,10 @@ import com.tpfinalgrupo9spring.mappers.UserMapper;
 import com.tpfinalgrupo9spring.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -18,22 +20,36 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public UserDto createUser(UserDto user){
+    public List<UserDto> getUsers() {
+        List<UserEntity> users = userRepository.findAll();
+        return users.stream().map(UserMapper::userToDto).collect(Collectors.toList());
+    }
+
+    public Object getUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario con ID: " + id + " No encontrado"));
+    }
+
+    public UserDto createUser(UserDto user) {
         UserEntity entity = UserMapper.dtoToUser(user);
         UserEntity entitySaved = userRepository.save(entity);
         user = UserMapper.userToDto(entitySaved);
         return user;
     }
-    public Object updateUser(Long id, UserDto newUser) {
-            UserEntity userToUpdate = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario No encontrado con ID: " + id));
-           updateAttributes(userToUpdate, newUser);
-           UserEntity userUpdated = userRepository.save(userToUpdate);
 
-           return UserMapper.userToDto(userUpdated);
+    public Object updateUser(Long id, UserDto newUser) {
+        UserEntity userToUpdate = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario con ID: " + id + " No encontrado"));
+        updateAttributes(userToUpdate, newUser);
+        UserEntity userUpdated = userRepository.save(userToUpdate);
+
+        return UserMapper.userToDto(userUpdated);
     }
 
 
-    public List<UserEntity> getUsers() {return userRepository.findAll();}
+    public String deleteUser(Long id) {
+        UserEntity userToDelete = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario con ID: " + id + " No encontrado"));
+        userRepository.deleteById(id);
+        return "El usuario " + userToDelete.getUsername() + "ha sido eliminado";
+    }
 
 
     public boolean existsByUsername(String username) {
@@ -44,30 +60,34 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
-    public boolean existsByDni(String dni){
+    public boolean existsByDni(String dni) {
         return userRepository.existsByDni(dni);
     }
+
     private void updateAttributes(UserEntity userToUpdate, UserDto newUser) {
 
-        if (newUser.getUsername() != null){
+        if (newUser.getUsername() != null) {
             userToUpdate.setUsername(newUser.getUsername());
         }
-        if (newUser.getFirstname() != null){
+        if (newUser.getFirstname() != null) {
             userToUpdate.setFirstname(newUser.getFirstname());
         }
-        if (newUser.getLastname() != null){
+        if (newUser.getLastname() != null) {
             userToUpdate.setLastname(newUser.getLastname());
         }
-        if (newUser.getPassword() != null){
+        if (newUser.getPassword() != null) {
             userToUpdate.setPassword(newUser.getPassword());
         }
-        if (newUser.getEmail() != null){
+        if (newUser.getEmail() != null) {
             userToUpdate.setEmail(newUser.getEmail());
         }
-        if (newUser.getAddress() != null){
+        if (newUser.getAddress() != null) {
             userToUpdate.setAddress(newUser.getAddress());
         }
-        if (newUser.getBirthday_date() != null){
+        if (newUser.getDni() != null) {
+            userToUpdate.setDni(newUser.getDni());
+        }
+        if (newUser.getBirthday_date() != null) {
             userToUpdate.setBirthday_date(newUser.getBirthday_date());
         }
         userToUpdate.setUpdated_at(LocalDateTime.now());

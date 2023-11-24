@@ -30,13 +30,25 @@ public class UserController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<UserEntity>> getUsers() {
+    public ResponseEntity<List<UserDto>> getUsers() {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(service.getUsers());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> getUserById(@PathVariable Long id){
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(service.getUserById(id));
+        }catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
     @PostMapping()
     public ResponseEntity<Object> createUser(@RequestBody @Valid UserDto user) {
@@ -57,14 +69,28 @@ public class UserController {
     @PutMapping("/updateUser/{id}")
     public ResponseEntity<Object> updateUser(@PathVariable Long id, @RequestBody UserDto userUpdated) {
         try {
+            validationUserService.validateUniqueFields(userUpdated);
             return ResponseEntity.status(HttpStatus.OK).body(service.updateUser(id, userUpdated));
 
-        }catch (EntityNotFoundException e){
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (DuplicateKeyException e) {
+            String errorMessage = errorHandlingService.getErrorMessage(e);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Collections.singletonMap("error", errorMessage));
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
+    @DeleteMapping("/deleteUser/{id}")
+    public ResponseEntity<Object> deleteUser(@PathVariable Long id) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(service.deleteUser(id));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+    }
 }

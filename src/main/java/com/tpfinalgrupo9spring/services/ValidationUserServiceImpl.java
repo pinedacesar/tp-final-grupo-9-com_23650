@@ -23,19 +23,19 @@ public class ValidationUserServiceImpl implements ValidationUserService {
 
     private void validateUniqueUsername(String username) {
         if (userService.existsByUsername(username)) {
-            throw new DuplicateKeyException(ErrorCode.DEFAULT_MESSAGE);
+            throw new DuplicateKeyException(ErrorCode.DUPLICATE_USERNAME);
         }
     }
 
     private void validateUniqueEmail(String email) {
         if (userService.existsByEmail(email)) {
-            throw new DuplicateKeyException(ErrorCode.DEFAULT_MESSAGE);
+            throw new DuplicateKeyException(ErrorCode.DUPLICATE_EMAIL);
         }
     }
 
     private void validateUniqueDni(String dni) {
         if (userService.existsByDni(dni)) {
-            throw new DuplicateKeyException(ErrorCode.DEFAULT_MESSAGE);
+            throw new DuplicateKeyException(ErrorCode.DUPLICATE_DNI);
         }
     }
 }
