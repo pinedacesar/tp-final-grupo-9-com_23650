@@ -1,19 +1,20 @@
 package com.tpfinalgrupo9spring.controllers;
 
+import com.tpfinalgrupo9spring.entities.UserEntity;
 import com.tpfinalgrupo9spring.entities.dtos.UserDto;
 import com.tpfinalgrupo9spring.repositories.ErrorHandlingService;
 import com.tpfinalgrupo9spring.repositories.ValidationUserService;
 import com.tpfinalgrupo9spring.services.UserService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.NamedStoredProcedureQueries;
 import jakarta.validation.Valid;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -28,6 +29,15 @@ public class UserController {
         this.errorHandlingService = errorHandlingService;
     }
 
+    @GetMapping()
+    public ResponseEntity<List<UserEntity>> getUsers() {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(service.getUsers());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @PostMapping()
     public ResponseEntity<Object> createUser(@RequestBody @Valid UserDto user) {
         try {
@@ -40,6 +50,19 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Collections.singletonMap("error", errorMessage));
         } catch (Exception e) {
 
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PutMapping("/updateUser/{id}")
+    public ResponseEntity<Object> updateUser(@PathVariable Long id, @RequestBody UserDto userUpdated) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(service.updateUser(id, userUpdated));
+
+        }catch (EntityNotFoundException e){
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
+        catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
