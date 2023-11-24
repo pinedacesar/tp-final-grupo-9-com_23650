@@ -26,7 +26,8 @@ public class UserService {
     }
 
     public Object getUserById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario con ID: " + id + " No encontrado"));
+        UserEntity user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario con ID: " + id + " No encontrado"));
+        return UserMapper.userToDto(user);
     }
 
     public UserDto createUser(UserDto user) {
@@ -48,7 +49,7 @@ public class UserService {
     public String deleteUser(Long id) {
         UserEntity userToDelete = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario con ID: " + id + " No encontrado"));
         userRepository.deleteById(id);
-        return "El usuario " + userToDelete.getUsername() + "ha sido eliminado";
+        return "El usuario " + userToDelete.getUsername() + " ha sido eliminado";
     }
 
 
