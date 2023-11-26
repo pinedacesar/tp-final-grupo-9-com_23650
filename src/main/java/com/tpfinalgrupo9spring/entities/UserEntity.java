@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Getter
@@ -55,5 +56,8 @@ public class UserEntity {
     private LocalDateTime created_at;
 
     private LocalDateTime updated_at;
+
+    @OneToMany(mappedBy="Accounts")
+    private List<Accounts> accounts;
 
 }
