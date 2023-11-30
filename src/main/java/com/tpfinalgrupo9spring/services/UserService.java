@@ -53,6 +53,13 @@ public class UserService {
         userRepository.deleteById(id);
         return "El usuario " + userToDelete.getUsername() + " ha sido eliminado";
     }
+    public Object updatePassword(Long id, String newPassWord) {
+        UserEntity userToUpdate = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario con ID: " + id + " No encontrado"));
+
+        userToUpdate.setPassword(BCrypt.hashpw(newPassWord,BCrypt.gensalt()));
+        userRepository.save(userToUpdate);
+        return "La contraseña del usuario " + userToUpdate.getUsername() + " ha sido actualizada";
+    }
 
 
     public boolean existsByUsername(String username) {
