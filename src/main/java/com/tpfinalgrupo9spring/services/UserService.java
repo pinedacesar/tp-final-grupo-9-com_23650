@@ -4,6 +4,7 @@ import com.tpfinalgrupo9spring.entities.UserEntity;
 import com.tpfinalgrupo9spring.entities.dtos.UserDto;
 import com.tpfinalgrupo9spring.mappers.UserMapper;
 import com.tpfinalgrupo9spring.repositories.UserRepository;
+import com.tpfinalgrupo9spring.utils.BCrypt;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,7 @@ public class UserService {
 
     public UserDto createUser(UserDto user) {
         UserEntity entity = UserMapper.dtoToUser(user);
+        entity.setPassword(BCrypt.hashpw(user.getPassword(),BCrypt.gensalt()));
         UserEntity entitySaved = userRepository.save(entity);
         user = UserMapper.userToDto(entitySaved);
         return user;
