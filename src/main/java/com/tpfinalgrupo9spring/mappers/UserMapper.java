@@ -29,7 +29,7 @@ public class UserMapper {
         dto.setLastname(user.getLastname());
         dto.setDni(user.getDni());
         dto.setBirthday_date(user.getBirthday_date());
-        dto.setPassword("*********");
+        dto.setPassword(user.getPassword());
         dto.setEmail(user.getEmail());
         dto.setAddress(user.getAddress());
         dto.setCreated_at(user.getCreated_at());
