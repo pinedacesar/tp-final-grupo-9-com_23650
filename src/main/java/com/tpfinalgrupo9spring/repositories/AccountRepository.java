@@ -11,6 +11,6 @@ public interface AccountRepository extends JpaRepository<Accounts, Long> {
 
     long countByOwner(UserEntity owner);
     boolean existsByAlias(String alias);
-    boolean existsByCBU(String cbu);
+    boolean existsByCbu(String cbu);
 
 }

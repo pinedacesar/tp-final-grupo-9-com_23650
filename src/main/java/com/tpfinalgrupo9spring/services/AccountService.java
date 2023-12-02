@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class AccountService {
 
     private final AccountRepository repository;
-    public final UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public AccountService(AccountRepository repository, UserRepository userRepository)
     {
@@ -53,8 +53,10 @@ public class AccountService {
             create_cbu(owner,AccountMapper.dtoToAccount(dto),repository.countByOwner(owner));
         }
         dto.setOwner(owner);
-        dto.setAmount(BigDecimal.ZERO);
+        if (dto.getAmount()==null)
+            dto.setAmount(BigDecimal.ZERO);
         dto.setIsActive(true);
+
         Accounts newAccount = repository.save(AccountMapper.dtoToAccount(dto));
         return AccountMapper.accountToDto(newAccount);
     }

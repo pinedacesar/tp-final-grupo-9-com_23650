@@ -32,12 +32,12 @@ public class Accounts {
     @NotBlank
     @Column(name = "sucursal")
     String sucursal;
-    @NotBlank //todo refactor a bigdecimal
+
     @Column(name = "amount")
     BigDecimal amount; //not null
 
     @ManyToOne
-    @JoinColumn(name="owner_id", nullable=false)
+//    @JoinColumn(name="owner_id", nullable=false)
     UserEntity owner; // fk_user.id
 
     Boolean isActive;

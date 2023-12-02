@@ -57,7 +57,7 @@ public class UserEntity {
 
     private LocalDateTime updated_at;
 
-    @OneToMany(mappedBy="Accounts")
+    @OneToMany(mappedBy="owner", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Accounts> accounts;
 
 }
