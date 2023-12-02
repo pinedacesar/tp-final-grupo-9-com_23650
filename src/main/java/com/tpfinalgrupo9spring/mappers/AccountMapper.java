@@ -18,7 +18,7 @@ public class AccountMapper {
                 .amount(account.getAmount())
                 .sucursal(account.getSucursal())
                 .amount(account.getAmount())
-                .owner(account.getOwner())
+                .ownerId(account.getOwner().getId())
                 .isActive(account.getIsActive())
                 .build();
 

@@ -4,11 +4,11 @@ import com.tpfinalgrupo9spring.entities.dtos.AccountDTO;
 import com.tpfinalgrupo9spring.entities.enums.AccountType;
 import com.tpfinalgrupo9spring.entities.Accounts;
 import com.tpfinalgrupo9spring.entities.UserEntity;
-import com.tpfinalgrupo9spring.exceptions.AccountNotFoundException;
-import com.tpfinalgrupo9spring.exceptions.UserNotFoundException;
+import com.tpfinalgrupo9spring.exceptions.*;
 import com.tpfinalgrupo9spring.mappers.AccountMapper;
 import com.tpfinalgrupo9spring.repositories.AccountRepository;
 import com.tpfinalgrupo9spring.repositories.UserRepository;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -36,11 +36,13 @@ public class AccountService {
                 .collect(Collectors.toList());
     }
 
-    public AccountDTO createAccount(AccountDTO dto) throws UserNotFoundException {
-        UserEntity owner =userRepository.findById(dto.getOwnerId()).get();
-        if (owner==null)
+    public AccountDTO createAccount(AccountDTO dto) throws UserNotFoundException, SaveAccountException, CbuDuplicatedException, AliasDuplicatedException {
+        UserEntity owner;
+        try {
+            owner = userRepository.findById(dto.getOwnerId()).get();
+        } catch (Exception e) {
             throw new UserNotFoundException("Usuario no encontrado");
-
+        }
         if (dto.getTipo()==null)
             dto.setTipo(AccountType.ARS_SAVINGS_BANK);
         if (dto.getAlias()==null) {
@@ -50,14 +52,29 @@ public class AccountService {
                     .concat(random.toString()));
         }
         if (dto.getCbu()==null){
-            create_cbu(owner,AccountMapper.dtoToAccount(dto),repository.countByOwner(owner));
+            dto.setCbu(create_cbu(owner,AccountMapper.dtoToAccount(dto),repository.countByOwner(owner)));
         }
         dto.setOwner(owner);
+        dto.setOwnerId(owner.getId());
         if (dto.getAmount()==null)
             dto.setAmount(BigDecimal.ZERO);
         dto.setIsActive(true);
 
-        Accounts newAccount = repository.save(AccountMapper.dtoToAccount(dto));
+        if (repository.existsByCbu(dto.getCbu()))
+            throw new CbuDuplicatedException("CBU duplicado");
+
+        if (repository.existsByAlias(dto.getAlias()))
+            throw new AliasDuplicatedException("Alias duplicado");
+
+
+        Accounts newAccount = AccountMapper.dtoToAccount(dto);
+        try {
+            newAccount = repository.save(newAccount);
+        }catch (DataAccessException e){
+            throw new SaveAccountException(e.getMessage());
+        }
+
+
         return AccountMapper.accountToDto(newAccount);
     }
 
@@ -127,8 +144,8 @@ public class AccountService {
     public String create_cbu(UserEntity usuario, Accounts cuenta, long numAccounts){
         String entity = completarConCeros("1", 4);
         String dni = completarConCeros(usuario.getDni(), 10);
-        String branch = completarConCeros(String.valueOf(cuenta.getSucursal()), 3);
-        String type = completarConCeros(String.valueOf(cuenta.getTipo()), 2);
+        String branch = completarConCeros(String.valueOf(cuenta.getSucursal()), 4);
+        String type = completarConCeros(String.valueOf(cuenta.getTipo().ordinal()), 3);
         // Cantidad de cuentas getAccountsByOwner +1
         String cbu = entity + branch + dni + type +numAccounts;
         cuenta.setCbu(Long.valueOf(cbu).toString()); // Asignar el CBU generado a la instancia de Accounts proporcionada

@@ -2,8 +2,7 @@ package com.tpfinalgrupo9spring.controllers;
 
 
 import com.tpfinalgrupo9spring.entities.dtos.AccountDTO;
-import com.tpfinalgrupo9spring.exceptions.AccountNotFoundException;
-import com.tpfinalgrupo9spring.exceptions.UserNotFoundException;
+import com.tpfinalgrupo9spring.exceptions.*;
 import com.tpfinalgrupo9spring.services.AccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +37,14 @@ public class AccountController {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.createAccount(dto));
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
+        } catch (SaveAccountException e) {
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(e.getMessage());
+        } catch (AliasDuplicatedException e) {
+            return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(e.getMessage());
+        } catch (CbuDuplicatedException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+        catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
