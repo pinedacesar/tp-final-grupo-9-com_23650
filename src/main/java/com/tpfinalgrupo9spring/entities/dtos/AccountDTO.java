@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -30,5 +31,7 @@ public class AccountDTO {
     private Long ownerId;
     private UserEntity owner;
     private Boolean isActive;
+    private LocalDateTime created_at;
 
+    private LocalDateTime updated_at;
 }

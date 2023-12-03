@@ -12,6 +12,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -66,7 +67,8 @@ public class AccountService {
         if (repository.existsByAlias(dto.getAlias()))
             throw new AliasDuplicatedException("Alias duplicado");
 
-
+        dto.setCreated_at(LocalDateTime.now());
+        dto.setUpdated_at(LocalDateTime.now());
         Accounts newAccount = AccountMapper.dtoToAccount(dto);
         try {
             newAccount = repository.save(newAccount);
@@ -84,9 +86,10 @@ public class AccountService {
     }
 
     public String deleteAccount(Long id) throws AccountNotFoundException {
-        if (repository.existsById(id)){
+        if (repository.existsById(id) && repository.findById(id).get().getIsActive()){
             Accounts entity = repository.findById(id).get();
             entity.setIsActive(false);
+            entity.setUpdated_at(LocalDateTime.now());
             repository.save(entity);
             return "La cuenta con id: " + id + " ha sido eliminada";
         } else {
@@ -96,7 +99,7 @@ public class AccountService {
     }
 
     public AccountDTO updateAccount(Long id, AccountDTO dto) throws AccountNotFoundException {
-        if (repository.existsById(id)) {
+        if (repository.existsById(id)&& repository.findById(id).get().getIsActive()) {
             Accounts accountToModify = repository.findById(id).get();
 
             if (!accountToModify.getIsActive())
@@ -121,7 +124,9 @@ public class AccountService {
                 accountToModify.setSucursal(dto.getSucursal());
             }
 
-            //No se puede cambiar el titular de la cuenta!
+            accountToModify.setUpdated_at(LocalDateTime.now());
+
+            //No se puede cambiar el titular de la cuenta!!
 
             Accounts accountModified = repository.save(accountToModify);
 

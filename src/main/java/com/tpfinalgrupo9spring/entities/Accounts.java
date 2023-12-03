@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -42,6 +43,8 @@ public class Accounts {
 
     Boolean isActive;
 
+    private LocalDateTime created_at;
 
+    private LocalDateTime updated_at;
 
 }

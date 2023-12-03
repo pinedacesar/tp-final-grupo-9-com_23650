@@ -20,6 +20,8 @@ public class AccountMapper {
                 .amount(account.getAmount())
                 .ownerId(account.getOwner().getId())
                 .isActive(account.getIsActive())
+                .created_at(account.getCreated_at())
+                .updated_at(account.getUpdated_at())
                 .build();
 
 
@@ -37,6 +39,8 @@ public class AccountMapper {
                 .amount(dto.getAmount())
                 .owner(dto.getOwner())
                 .isActive(dto.getIsActive())
+                .created_at(dto.getCreated_at())
+                .updated_at(dto.getUpdated_at())
                 .build();
 
     }
