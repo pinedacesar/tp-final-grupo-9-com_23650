@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
-    public final UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -52,6 +52,13 @@ public class UserService {
         UserEntity userToDelete = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario con ID: " + id + " No encontrado"));
         userRepository.deleteById(id);
         return "El usuario " + userToDelete.getUsername() + " ha sido eliminado";
+    }
+    public Object updatePassword(Long id, String newPassWord) {
+        UserEntity userToUpdate = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario con ID: " + id + " No encontrado"));
+
+        userToUpdate.setPassword(BCrypt.hashpw(newPassWord,BCrypt.gensalt()));
+        userRepository.save(userToUpdate);
+        return "La contraseña del usuario " + userToUpdate.getUsername() + " ha sido actualizada";
     }
 
 

@@ -93,4 +93,19 @@ public class UserController {
         }
 
     }
+
+    @PatchMapping ("/updatePassword/user/{id}")
+    public ResponseEntity<Object> updatePassword(@PathVariable Long id, @RequestBody String newPassword) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(service.updatePassword(id, newPassword));
+
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        } catch (DuplicateKeyException e) {
+            String errorMessage = errorHandlingService.getErrorMessage(e);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Collections.singletonMap("error", errorMessage));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }
