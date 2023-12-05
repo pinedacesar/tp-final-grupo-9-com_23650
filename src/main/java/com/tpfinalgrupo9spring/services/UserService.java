@@ -1,15 +1,18 @@
 package com.tpfinalgrupo9spring.services;
 
+import com.tpfinalgrupo9spring.TpFinalApplication;
 import com.tpfinalgrupo9spring.entities.UserEntity;
 import com.tpfinalgrupo9spring.entities.dtos.UserDto;
 import com.tpfinalgrupo9spring.mappers.UserMapper;
 import com.tpfinalgrupo9spring.repositories.UserRepository;
 import com.tpfinalgrupo9spring.utils.BCrypt;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,10 +56,14 @@ public class UserService {
         userRepository.deleteById(id);
         return "El usuario " + userToDelete.getUsername() + " ha sido eliminado";
     }
-    public Object updatePassword(Long id, String newPassWord) {
+    public Object updatePassword(Long id, String newPassword, String oldPassword) {
         UserEntity userToUpdate = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario con ID: " + id + " No encontrado"));
 
-        userToUpdate.setPassword(BCrypt.hashpw(newPassWord,BCrypt.gensalt()));
+        if (BCrypt.checkpw(oldPassword, userToUpdate.getPassword())){
+            userToUpdate.setPassword(BCrypt.hashpw(newPassword,BCrypt.gensalt()));
+        }else{
+            return "La contraseña actual " + oldPassword + " es incorrecta";
+        }
         userRepository.save(userToUpdate);
         return "La contraseña del usuario " + userToUpdate.getUsername() + " ha sido actualizada";
     }

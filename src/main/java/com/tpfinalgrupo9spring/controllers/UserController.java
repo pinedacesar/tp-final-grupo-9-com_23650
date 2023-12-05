@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -39,10 +40,10 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getUserById(@PathVariable Long id){
+    public ResponseEntity<Object> getUserById(@PathVariable Long id) {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(service.getUserById(id));
-        }catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -94,10 +95,15 @@ public class UserController {
 
     }
 
-    @PatchMapping ("/updatePassword/user/{id}")
-    public ResponseEntity<Object> updatePassword(@PathVariable Long id, @RequestBody String newPassword) {
+    @PatchMapping("/updatePassword/user/{id}")
+    public ResponseEntity<Object> updatePassword(@PathVariable Long id, @RequestBody Map<String, String> passwordMap) {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(service.updatePassword(id, newPassword));
+            String newPassword = passwordMap.get("nueva_contrasenia");
+            String oldPassword = passwordMap.get("contrasenia_actual");
+            if (newPassword == null || oldPassword == null) {
+                return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(service.updatePassword(id, newPassword, oldPassword));
 
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
