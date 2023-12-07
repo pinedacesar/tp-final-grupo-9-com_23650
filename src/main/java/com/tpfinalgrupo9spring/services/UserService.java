@@ -2,11 +2,18 @@ package com.tpfinalgrupo9spring.services;
 
 import com.tpfinalgrupo9spring.TpFinalApplication;
 import com.tpfinalgrupo9spring.entities.UserEntity;
+import com.tpfinalgrupo9spring.entities.dtos.AccountDTO;
 import com.tpfinalgrupo9spring.entities.dtos.UserDto;
+import com.tpfinalgrupo9spring.entities.enums.AccountType;
+import com.tpfinalgrupo9spring.exceptions.AliasDuplicatedException;
+import com.tpfinalgrupo9spring.exceptions.CbuDuplicatedException;
+import com.tpfinalgrupo9spring.exceptions.SaveAccountException;
+import com.tpfinalgrupo9spring.exceptions.UserNotFoundException;
 import com.tpfinalgrupo9spring.mappers.UserMapper;
 import com.tpfinalgrupo9spring.repositories.UserRepository;
 import com.tpfinalgrupo9spring.utils.BCrypt;
 import jakarta.persistence.EntityNotFoundException;
+import org.apache.catalina.User;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
@@ -19,9 +26,12 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AccountService accountService;
 
-    public UserService(UserRepository userRepository) {
+
+    public UserService(UserRepository userRepository, AccountService accountService) {
         this.userRepository = userRepository;
+        this.accountService =accountService;
     }
 
     public List<UserDto> getUsers() {
@@ -34,11 +44,24 @@ public class UserService {
         return UserMapper.userToDto(user);
     }
 
-    public UserDto createUser(UserDto user) {
+    public UserDto createUser(UserDto user) throws UserNotFoundException, CbuDuplicatedException, AliasDuplicatedException, SaveAccountException {
         UserEntity entity = UserMapper.dtoToUser(user);
         entity.setPassword(BCrypt.hashpw(user.getPassword(),BCrypt.gensalt()));
+        entity.setCreated_at(LocalDateTime.now());
+        entity.setUpdated_at(LocalDateTime.now());
         UserEntity entitySaved = userRepository.save(entity);
-        user = UserMapper.userToDto(entitySaved);
+        AccountDTO cuentaAutomatica =AccountDTO.builder()
+                .ownerId(entity.getId())
+                .tipo(AccountType.ARS_SAVINGS_BANK)
+                .sucursal("111")
+                .build();
+
+        cuentaAutomatica.setTipo(AccountType.ARS_SAVINGS_BANK);
+        cuentaAutomatica.setSucursal("100");
+        cuentaAutomatica.setOwner(UserMapper.userToDto(entitySaved));
+        accountService.createAccount(cuentaAutomatica);
+        UserEntity newUser=userRepository.findById(entitySaved.getId()).get();
+        user = UserMapper.userToDto(newUser);
         return user;
     }
 

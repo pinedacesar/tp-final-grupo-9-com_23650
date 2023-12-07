@@ -29,7 +29,7 @@ public class AccountDTO {
     private String sucursal;
 
     private Long ownerId;
-    private UserEntity owner;
+    private UserDto owner;
     private Boolean isActive;
     private LocalDateTime created_at;
 

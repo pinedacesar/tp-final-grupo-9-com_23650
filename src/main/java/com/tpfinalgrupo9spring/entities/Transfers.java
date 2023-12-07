@@ -1,5 +1,6 @@
 package com.tpfinalgrupo9spring.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,7 +27,8 @@ public class Transfers {
     private Date date;
 
     private BigDecimal amount;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JsonBackReference
     UserEntity owner; // fk_user.id
 
     private LocalDateTime created_at;

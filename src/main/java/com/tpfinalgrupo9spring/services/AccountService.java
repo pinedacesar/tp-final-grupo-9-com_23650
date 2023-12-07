@@ -6,6 +6,7 @@ import com.tpfinalgrupo9spring.entities.Accounts;
 import com.tpfinalgrupo9spring.entities.UserEntity;
 import com.tpfinalgrupo9spring.exceptions.*;
 import com.tpfinalgrupo9spring.mappers.AccountMapper;
+import com.tpfinalgrupo9spring.mappers.UserMapper;
 import com.tpfinalgrupo9spring.repositories.AccountRepository;
 import com.tpfinalgrupo9spring.repositories.UserRepository;
 import org.springframework.dao.DataAccessException;
@@ -52,11 +53,12 @@ public class AccountService {
                     .concat(owner.getLastname())
                     .concat(random.toString()));
         }
+        dto.setOwner(UserMapper.userToDto((owner)));
+        dto.setOwnerId(UserMapper.userToDto((owner)).getId());
         if (dto.getCbu()==null){
             dto.setCbu(create_cbu(owner,AccountMapper.dtoToAccount(dto),repository.countByOwner(owner)));
         }
-        dto.setOwner(owner);
-        dto.setOwnerId(owner.getId());
+
         if (dto.getAmount()==null)
             dto.setAmount(BigDecimal.ZERO);
         dto.setIsActive(true);
@@ -70,8 +72,11 @@ public class AccountService {
         dto.setCreated_at(LocalDateTime.now());
         dto.setUpdated_at(LocalDateTime.now());
         Accounts newAccount = AccountMapper.dtoToAccount(dto);
+        newAccount.setOwner(owner);
         try {
             newAccount = repository.save(newAccount);
+
+            UserEntity saveUser=userRepository.save(owner);
         }catch (DataAccessException e){
             throw new SaveAccountException(e.getMessage());
         }

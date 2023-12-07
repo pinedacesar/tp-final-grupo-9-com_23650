@@ -2,6 +2,10 @@ package com.tpfinalgrupo9spring.controllers;
 
 import com.tpfinalgrupo9spring.entities.UserEntity;
 import com.tpfinalgrupo9spring.entities.dtos.UserDto;
+import com.tpfinalgrupo9spring.exceptions.AliasDuplicatedException;
+import com.tpfinalgrupo9spring.exceptions.CbuDuplicatedException;
+import com.tpfinalgrupo9spring.exceptions.SaveAccountException;
+import com.tpfinalgrupo9spring.exceptions.UserNotFoundException;
 import com.tpfinalgrupo9spring.repositories.ErrorHandlingService;
 import com.tpfinalgrupo9spring.repositories.ValidationUserService;
 import com.tpfinalgrupo9spring.services.UserService;
@@ -31,7 +35,7 @@ public class UserController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<UserDto>> getUsers() {
+    public ResponseEntity<?> getUsers() {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(service.getUsers());
         } catch (Exception e) {
@@ -40,7 +44,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getUserById(@PathVariable Long id) {
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(service.getUserById(id));
         } catch (EntityNotFoundException e) {
@@ -52,7 +56,7 @@ public class UserController {
 
 
     @PostMapping()
-    public ResponseEntity<Object> createUser(@RequestBody @Valid UserDto user) {
+    public ResponseEntity<?> createUser(@RequestBody @Valid UserDto user) {
         try {
 
             validationUserService.validateUniqueFields(user);
@@ -61,14 +65,15 @@ public class UserController {
         } catch (DuplicateKeyException e) {
             String errorMessage = errorHandlingService.getErrorMessage(e);
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Collections.singletonMap("error", errorMessage));
-        } catch (Exception e) {
+        } catch (Exception | UserNotFoundException | CbuDuplicatedException | AliasDuplicatedException |
+                 SaveAccountException e) {
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @PutMapping("/updateUser/{id}")
-    public ResponseEntity<Object> updateUser(@PathVariable Long id, @RequestBody UserDto userUpdated) {
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UserDto userUpdated) {
         try {
             validationUserService.validateUniqueFields(userUpdated);
             return ResponseEntity.status(HttpStatus.OK).body(service.updateUser(id, userUpdated));
@@ -84,7 +89,7 @@ public class UserController {
     }
 
     @DeleteMapping("/deleteUser/{id}")
-    public ResponseEntity<Object> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(service.deleteUser(id));
         } catch (EntityNotFoundException e) {
@@ -96,7 +101,7 @@ public class UserController {
     }
 
     @PatchMapping("/updatePassword/user/{id}")
-    public ResponseEntity<Object> updatePassword(@PathVariable Long id, @RequestBody Map<String, String> passwordMap) {
+    public ResponseEntity<?> updatePassword(@PathVariable Long id, @RequestBody Map<String, String> passwordMap) {
         try {
             String newPassword = passwordMap.get("nueva_contrasenia");
             String oldPassword = passwordMap.get("contrasenia_actual");

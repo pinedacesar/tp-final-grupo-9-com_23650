@@ -28,6 +28,7 @@ public class TransferMapper {
                 .target(transfer.getTarget())
                 .origin(transfer.getOrigin())
                 .ownerId(transfer.getOwner().getId())
+//                .owner(transfer.getOwner())
                 .created_at(transfer.getCreated_at())
                 .updated_at(transfer.getUpdated_at())
                 .completed(transfer.getCompleted())

@@ -23,7 +23,7 @@ public class TransferController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TransferDTO>> getTransfers(){
+    public ResponseEntity<?> getTransfers(){
         List<TransferDTO> transfers = service.getTransfers();
         return ResponseEntity.status(HttpStatus.OK).body(transfers);
     }
