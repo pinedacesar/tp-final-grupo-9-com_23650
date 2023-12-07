@@ -59,5 +59,6 @@ public class UserEntity {
 
     @OneToMany(mappedBy="owner", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Accounts> accounts;
-
+    @OneToMany(mappedBy="owner", cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<Transfers> transfers;
 }
