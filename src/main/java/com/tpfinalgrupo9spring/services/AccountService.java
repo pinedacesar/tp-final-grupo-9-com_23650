@@ -74,9 +74,9 @@ public class AccountService {
         Accounts newAccount = AccountMapper.dtoToAccount(dto);
         newAccount.setOwner(owner);
         try {
-            newAccount = repository.save(newAccount);
+            newAccount = repository.saveAndFlush(newAccount);
 
-            UserEntity saveUser=userRepository.save(owner);
+            UserEntity saveUser=userRepository.saveAndFlush(owner);
         }catch (DataAccessException e){
             throw new SaveAccountException(e.getMessage());
         }
@@ -152,9 +152,17 @@ public class AccountService {
 
     //Codigo de Matias adapatado a mi rama
     public String create_cbu(UserEntity usuario, Accounts cuenta, long numAccounts){
+
+        String dniVal =usuario.getDni();
+        if (dniVal.length()>10)
+            dniVal=dniVal.substring(0,9);
+        String branchVal=String.valueOf(cuenta.getSucursal());
+        if (branchVal.length()>4)
+            branchVal=branchVal.substring(0,3);
+
         String entity = completarConCeros("1", 4);
-        String dni = completarConCeros(usuario.getDni(), 10);
-        String branch = completarConCeros(String.valueOf(cuenta.getSucursal()), 4);
+        String dni = completarConCeros(dniVal, 10);
+        String branch = completarConCeros(branchVal, 4);
         String type = completarConCeros(String.valueOf(cuenta.getTipo().ordinal()), 3);
         // Cantidad de cuentas getAccountsByOwner +1
         String cbu = entity + branch + dni + type +numAccounts;

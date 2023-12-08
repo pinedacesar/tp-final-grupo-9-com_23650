@@ -1,6 +1,7 @@
 package com.tpfinalgrupo9spring.services;
 
 import com.tpfinalgrupo9spring.TpFinalApplication;
+import com.tpfinalgrupo9spring.entities.Accounts;
 import com.tpfinalgrupo9spring.entities.UserEntity;
 import com.tpfinalgrupo9spring.entities.dtos.AccountDTO;
 import com.tpfinalgrupo9spring.entities.dtos.UserDto;
@@ -10,6 +11,7 @@ import com.tpfinalgrupo9spring.exceptions.CbuDuplicatedException;
 import com.tpfinalgrupo9spring.exceptions.SaveAccountException;
 import com.tpfinalgrupo9spring.exceptions.UserNotFoundException;
 import com.tpfinalgrupo9spring.mappers.UserMapper;
+import com.tpfinalgrupo9spring.repositories.AccountRepository;
 import com.tpfinalgrupo9spring.repositories.UserRepository;
 import com.tpfinalgrupo9spring.utils.BCrypt;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,12 +28,14 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
     private final AccountService accountService;
 
 
-    public UserService(UserRepository userRepository, AccountService accountService) {
+    public UserService(UserRepository userRepository,AccountRepository accountRepository, AccountService accountService) {
         this.userRepository = userRepository;
         this.accountService =accountService;
+        this.accountRepository=accountRepository;
     }
 
     public List<UserDto> getUsers() {
@@ -49,7 +53,7 @@ public class UserService {
         entity.setPassword(BCrypt.hashpw(user.getPassword(),BCrypt.gensalt()));
         entity.setCreated_at(LocalDateTime.now());
         entity.setUpdated_at(LocalDateTime.now());
-        UserEntity entitySaved = userRepository.save(entity);
+        UserEntity entitySaved = userRepository.saveAndFlush(entity);
         AccountDTO cuentaAutomatica =AccountDTO.builder()
                 .ownerId(entity.getId())
                 .tipo(AccountType.ARS_SAVINGS_BANK)
@@ -59,9 +63,12 @@ public class UserService {
         cuentaAutomatica.setTipo(AccountType.ARS_SAVINGS_BANK);
         cuentaAutomatica.setSucursal("100");
         cuentaAutomatica.setOwner(UserMapper.userToDto(entitySaved));
-        accountService.createAccount(cuentaAutomatica);
-        UserEntity newUser=userRepository.findById(entitySaved.getId()).get();
-        user = UserMapper.userToDto(newUser);
+        AccountDTO newAccountDto=accountService.createAccount(cuentaAutomatica);
+        Accounts newAccount= accountRepository.findById(newAccountDto.getId()).get();
+
+        entitySaved = userRepository.findById(entitySaved.getId()).get();
+
+        user = UserMapper.userToDto(entitySaved);//no logre que devuelva en la creacion de usuario la cuenta en el body. en las consulta funciona
         return user;
     }
 
