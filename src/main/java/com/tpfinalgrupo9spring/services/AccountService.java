@@ -9,6 +9,8 @@ import com.tpfinalgrupo9spring.mappers.AccountMapper;
 import com.tpfinalgrupo9spring.mappers.UserMapper;
 import com.tpfinalgrupo9spring.repositories.AccountRepository;
 import com.tpfinalgrupo9spring.repositories.UserRepository;
+import com.tpfinalgrupo9spring.utils.AliasGen;
+import com.tpfinalgrupo9spring.utils.CbuGen;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
@@ -23,11 +25,14 @@ public class AccountService {
 
     private final AccountRepository repository;
     private final UserRepository userRepository;
-
-    public AccountService(AccountRepository repository, UserRepository userRepository)
+    private final AliasGen aliasGen;
+    private final CbuGen cebuGen;
+    public AccountService(AccountRepository repository, UserRepository userRepository, AliasGen aliasGen, CbuGen cbuGen)
     {
         this.repository = repository;
         this.userRepository=userRepository;
+        this.cebuGen = cbuGen;
+        this.aliasGen = aliasGen;
     }
     public List<AccountDTO> getAccounts() {
         List<Accounts> accounts = repository.findAll();
@@ -48,15 +53,25 @@ public class AccountService {
         if (dto.getTipo()==null)
             dto.setTipo(AccountType.ARS_SAVINGS_BANK);
         if (dto.getAlias()==null) {
-            Integer random=LocalTime.now().getSecond();  // TODO implementar generacion de alias de Matias
-            dto.setAlias(owner.getFirstname().concat(".")
-                    .concat(owner.getLastname())
-                    .concat(random.toString()));
+//            Integer random=LocalTime.now().getSecond();  // TODO implementar generacion de alias de Matias
+//            dto.setAlias(owner.getFirstname().concat(".")
+//                    .concat(owner.getLastname())
+//                    .concat(random.toString()));
+            try {
+                dto.setAlias(aliasGen.generateUniqueAlias());
+            } catch (AliasGenerationException e) {
+                throw new RuntimeException(e);
+            }
         }
         dto.setOwner(UserMapper.userToDto((owner)));
         dto.setOwnerId(UserMapper.userToDto((owner)).getId());
         if (dto.getCbu()==null){
-            dto.setCbu(create_cbu(owner,AccountMapper.dtoToAccount(dto),repository.countByOwner(owner)));
+//            dto.setCbu(create_cbu(owner,AccountMapper.dtoToAccount(dto),repository.countByOwner(owner)));
+            try {
+                dto.setCbu(cebuGen.create_cbu(owner, AccountMapper.dtoToAccount(dto), repository.countByOwner(owner)));
+            } catch (CbuGenerationException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         if (dto.getAmount()==null)
