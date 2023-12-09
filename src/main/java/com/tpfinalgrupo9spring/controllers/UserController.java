@@ -105,7 +105,7 @@ public class UserController {
         try {
             String newPassword = passwordMap.get("nueva_contrasenia");
             String oldPassword = passwordMap.get("contrasenia_actual");
-            if (newPassword == null || oldPassword == null) {
+            if (newPassword == null || newPassword.trim().isEmpty() || oldPassword == null || oldPassword.trim().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
             }
             return ResponseEntity.status(HttpStatus.OK).body(service.updatePassword(id, newPassword, oldPassword));
