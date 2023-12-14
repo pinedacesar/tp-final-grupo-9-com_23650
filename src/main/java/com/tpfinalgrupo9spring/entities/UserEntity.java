@@ -1,5 +1,6 @@
 package com.tpfinalgrupo9spring.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -58,6 +59,9 @@ public class UserEntity {
     private LocalDateTime updated_at;
 
     @OneToMany(mappedBy="owner", cascade = CascadeType.ALL,orphanRemoval = true)
+    @JsonManagedReference
     private List<Accounts> accounts;
-
+    @OneToMany(mappedBy="owner", cascade = CascadeType.ALL,orphanRemoval = true)
+    @JsonManagedReference
+    private List<Transfers> transfers;
 }

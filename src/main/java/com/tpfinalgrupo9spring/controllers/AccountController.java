@@ -21,7 +21,7 @@ public class AccountController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AccountDTO>> getAccounts(){
+    public ResponseEntity<?> getAccounts(){
         List<AccountDTO> lista = service.getAccounts();
         return ResponseEntity.status(HttpStatus.OK).body(lista);
     }
@@ -32,7 +32,7 @@ public class AccountController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> createAccount(@RequestBody AccountDTO dto){
+    public ResponseEntity<?> createAccount(@RequestBody AccountDTO dto){
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.createAccount(dto));
         } catch (UserNotFoundException e) {

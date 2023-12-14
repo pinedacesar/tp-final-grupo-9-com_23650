@@ -6,8 +6,11 @@ import com.tpfinalgrupo9spring.entities.Accounts;
 import com.tpfinalgrupo9spring.entities.UserEntity;
 import com.tpfinalgrupo9spring.exceptions.*;
 import com.tpfinalgrupo9spring.mappers.AccountMapper;
+import com.tpfinalgrupo9spring.mappers.UserMapper;
 import com.tpfinalgrupo9spring.repositories.AccountRepository;
 import com.tpfinalgrupo9spring.repositories.UserRepository;
+import com.tpfinalgrupo9spring.utils.AliasGen;
+import com.tpfinalgrupo9spring.utils.CbuGen;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +25,14 @@ public class AccountService {
 
     private final AccountRepository repository;
     private final UserRepository userRepository;
-
-    public AccountService(AccountRepository repository, UserRepository userRepository)
+    private final AliasGen aliasGen;
+    private final CbuGen cebuGen;
+    public AccountService(AccountRepository repository, UserRepository userRepository, AliasGen aliasGen, CbuGen cbuGen)
     {
         this.repository = repository;
         this.userRepository=userRepository;
+        this.cebuGen = cbuGen;
+        this.aliasGen = aliasGen;
     }
     public List<AccountDTO> getAccounts() {
         List<Accounts> accounts = repository.findAll();
@@ -47,16 +53,27 @@ public class AccountService {
         if (dto.getTipo()==null)
             dto.setTipo(AccountType.ARS_SAVINGS_BANK);
         if (dto.getAlias()==null) {
-            Integer random=LocalTime.now().getSecond();  // TODO implementar generacion de alias de Matias
-            dto.setAlias(owner.getFirstname().concat(".")
-                    .concat(owner.getLastname())
-                    .concat(random.toString()));
+//            Integer random=LocalTime.now().getSecond();  // TODO implementar generacion de alias de Matias
+//            dto.setAlias(owner.getFirstname().concat(".")
+//                    .concat(owner.getLastname())
+//                    .concat(random.toString()));
+            try {
+                dto.setAlias(aliasGen.generateUniqueAlias());
+            } catch (AliasGenerationException e) {
+                throw new RuntimeException(e);
+            }
         }
+        dto.setOwner(UserMapper.userToDto((owner)));
+        dto.setOwnerId(UserMapper.userToDto((owner)).getId());
         if (dto.getCbu()==null){
-            dto.setCbu(create_cbu(owner,AccountMapper.dtoToAccount(dto),repository.countByOwner(owner)));
+//            dto.setCbu(create_cbu(owner,AccountMapper.dtoToAccount(dto),repository.countByOwner(owner)));
+            try {
+                dto.setCbu(cebuGen.create_cbu(owner, AccountMapper.dtoToAccount(dto), repository.countByOwner(owner)));
+            } catch (CbuGenerationException e) {
+                throw new RuntimeException(e);
+            }
         }
-        dto.setOwner(owner);
-        dto.setOwnerId(owner.getId());
+
         if (dto.getAmount()==null)
             dto.setAmount(BigDecimal.ZERO);
         dto.setIsActive(true);
@@ -70,8 +87,11 @@ public class AccountService {
         dto.setCreated_at(LocalDateTime.now());
         dto.setUpdated_at(LocalDateTime.now());
         Accounts newAccount = AccountMapper.dtoToAccount(dto);
+        newAccount.setOwner(owner);
         try {
-            newAccount = repository.save(newAccount);
+            newAccount = repository.saveAndFlush(newAccount);
+
+            UserEntity saveUser=userRepository.saveAndFlush(owner);
         }catch (DataAccessException e){
             throw new SaveAccountException(e.getMessage());
         }
@@ -147,9 +167,17 @@ public class AccountService {
 
     //Codigo de Matias adapatado a mi rama
     public String create_cbu(UserEntity usuario, Accounts cuenta, long numAccounts){
+
+        String dniVal =usuario.getDni();
+        if (dniVal.length()>10)
+            dniVal=dniVal.substring(0,9);
+        String branchVal=String.valueOf(cuenta.getSucursal());
+        if (branchVal.length()>4)
+            branchVal=branchVal.substring(0,3);
+
         String entity = completarConCeros("1", 4);
-        String dni = completarConCeros(usuario.getDni(), 10);
-        String branch = completarConCeros(String.valueOf(cuenta.getSucursal()), 4);
+        String dni = completarConCeros(dniVal, 10);
+        String branch = completarConCeros(branchVal, 4);
         String type = completarConCeros(String.valueOf(cuenta.getTipo().ordinal()), 3);
         // Cantidad de cuentas getAccountsByOwner +1
         String cbu = entity + branch + dni + type +numAccounts;
